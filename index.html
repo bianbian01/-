@@ -5,69 +5,210 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>扫码播放音频</title>
   <style>
-    html,body{height:100%;margin:0;font-family:system-ui,Arial,Helvetica,sans-serif;background:#0f172a;color:#eef2ff}
-    .wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
-    .title{font-size:18px;margin-bottom:12px}
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;
-      width:220px;height:60px;border-radius:12px;background:linear-gradient(90deg,#06b6d4,#3b82f6);
-      color:white;font-weight:600;font-size:18px;border:0;cursor:pointer;box-shadow:0 8px 20px rgba(3,7,18,0.5)
+    :root{
+      --rose:#bf1650;
+      --rose-dark:#9f1843;
+      --yellow-1: #FFD600;   /* 纯黄色 */
+      --yellow-2: #FFEA75;
+      --overlay-alpha: 0.38;  /* 覆盖在图片上的玫红滤镜透明度（0 到 1） */
+      --muted: rgba(255,255,255,0.94);
     }
-    .hint{margin-top:12px;opacity:0.85;font-size:13px}
-    .cover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,6,23,0.55), rgba(2,6,23,0.85));backdrop-filter:blur(2px)}
-    .small{font-size:12px;opacity:.9}
+
+    html,body{height:100%;margin:0;font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft Yahei",Arial,sans-serif;background:#0f0f10;color:var(--muted);-webkit-font-smoothing:antialiased}
+    /* 页面整体背景使用 1.jpg */
+    body{
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      min-height:100vh;
+    }
+
+    /* 玫红覆盖层（可通过 --overlay-alpha 调整强度） */
+    .overlay{
+      position:fixed; inset:0;
+      background: linear-gradient(180deg, var(--rose), var(--rose-dark));
+      opacity: var(--overlay-alpha);
+      pointer-events:none;
+      mix-blend-mode: multiply;
+    }
+
+    .container{
+      width:min(1050px,98%);
+      max-width:1050px;
+      border-radius:14px;
+      padding:20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px) saturate(120%);
+      border:1px solid rgba(255,255,255,0.04);
+      display:flex;
+      gap:18px;
+      align-items:center;
+      color:var(--yellow-1);
+    }
+
+    .cover{
+      width:220px;height:220px;border-radius:12px;overflow:hidden;flex:0 0 220px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+    }
+    .cover img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.03) saturate(1.05);}
+
+    .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+
+    /* 名字（纯黄色 + 描边 + 柔和阴影） */
+    .hero{display:flex;flex-direction:column;gap:6px}
+    .name {
+      font-weight:900;
+      line-height:1;
+      font-size: clamp(36px, 8.6vw, 84px);
+      margin:0;padding:0;letter-spacing:-0.6px;
+      position:relative;
+      color: var(--yellow-1);
+      -webkit-text-stroke: 1px rgba(0,0,0,0.56);
+      text-shadow: 0 8px 28px rgba(0,0,0,0.72), 0 2px 6px rgba(0,0,0,0.5);
+      transition: transform .35s ease;
+      transform-origin:left center;
+    }
+
+    /* 轻微高光（不改变纯黄） */
+    .name::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events:none;
+      background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02), rgba(255,255,255,0));
+      mix-blend-mode: overlay;
+      opacity: 0;
+      transform: translateX(-30%);
+      transition: all 1.2s cubic-bezier(.2,.9,.2,1);
+      filter: blur(6px);
+    }
+    .name.glow::after{ opacity: 0.9; transform: translateX(100%); }
+
+    .tagline{ color: rgba(255,255,255,0.92); font-size:14px; margin:0 0 6px 0; }
+
+    .controls{ display:flex; gap:12px; align-items:center; margin-top:6px; flex-wrap:wrap }
+    .play-btn{
+      display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;border:0;
+      font-weight:800;color:#0f0f10;background: linear-gradient(90deg, var(--yellow-1), var(--yellow-2));
+      box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+      cursor:pointer; transition: transform .12s, box-shadow .12s;
+    }
+    .play-btn:hover{ transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,0.36); }
+    .progress{ width:320px; max-width:60%; height:8px; border-radius:999px; background:rgba(255,255,255,0.06); outline:none }
+    .progress::-webkit-slider-thumb{ -webkit-appearance:none; width:14px;height:14px;border-radius:50%; background:var(--yellow-2); box-shadow:0 6px 14px rgba(0,0,0,0.45); border:2px solid rgba(255,255,255,0.12); }
+
+    @media (max-width:780px){
+      .container{flex-direction:column; padding:16px; align-items:center;}
+      .cover{width:86%;height:200px;flex:unset;}
+      .main{width:100%;}
+      .name{font-size: clamp(28px, 10vw, 56px); text-align:center; width:100%;}
+      .hero{align-items:center;}
+      .progress{max-width:100%;}
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="title">扫码后点击播放（或等待浏览器允许自动播放）</div>
-    <button id="playBtn" class="btn">播放音频 ▶</button>
-    <div class="hint small">若未自动播放，请点击按钮（手机浏览器通常需要一次用户交互）</div>
+  <!-- 红色半透明叠层（可调整 --overlay-alpha） -->
+  <div class="overlay" aria-hidden="true"></div>
+
+  <div class="container" role="main">
+    <div class="cover" aria-hidden="true">
+      <!-- 封面使用 文件 徐春杰.jpg -->
+      <img src="徐春杰.jpg" alt="封面 - 徐春杰">
+    </div>
+
+    <div class="main">
+      <div class="hero">
+        <h1 id="heroName" class="name">徐春杰</h1>
+        <p class="tagline">五老精神代表人</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="controls">
+          <button id="playBtn" class="play-btn" aria-pressed="false" aria-label="播放或暂停">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="display:block"><path d="M5 3v18l15-9L5 3z" fill="black"/></svg>
+            <span id="btnText">播放</span>
+          </button>
+
+          <input id="progress" class="progress" type="range" min="0" max="100" value="0" aria-label="播放进度">
+          <div id="time" style="color:rgba(255,255,255,0.9);min-width:90px;text-align:right;font-weight:600">00:00 / 00:00</div>
+        </div>
+
+        <div style="margin-top:8px;color:rgba(255,255,255,0.9);font-size:13px">
+          <a id="download" href="徐春杰.mp3" download style="color:var(--yellow-2);text-decoration:underline">下载音频</a>
+          <span style="margin-left:8px;color:rgba(255,255,255,0.78)">· 若无法播放请尝试更换浏览器或点击下载</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <audio id="audio" preload="auto" playsinline>
     <source src="徐春杰.mp3" type="audio/mpeg">
+    您的浏览器不支持 audio 元素。
   </audio>
 
   <script>
-    const a = document.getElementById('audio');
-    const btn = document.getElementById('playBtn');
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const btnText = document.getElementById('btnText');
+    const progress = document.getElementById('progress');
+    const time = document.getElementById('time');
+    const heroName = document.getElementById('heroName');
 
-    // 尝试在 load 后自动播放（多数浏览器会阻止）
-    window.addEventListener('load', async () => {
+    window.addEventListener('load', ()=>{
+      // 轻扫高光动画（不改变基础黄色）
+      heroName.classList.add('glow');
+      setTimeout(()=> heroName.classList.remove('glow'), 1400);
+      // 尝试自动播放（大多数浏览器会阻止）
+      audio.play().catch(()=>{});
+    });
+
+    function fmt(sec){
+      if (!isFinite(sec)) return '00:00';
+      const m = Math.floor(sec/60).toString().padStart(2,'0');
+      const s = Math.floor(sec%60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    playBtn.addEventListener('click', async ()=>{
       try {
-        await a.play();
-        btn.textContent = '正在播放…';
-      } catch (err) {
-        // 被阻止，等待用户点击
-        btn.textContent = '点击播放';
+        if (audio.paused){ await audio.play(); btnText.textContent='暂停'; }
+        else { audio.pause(); btnText.textContent='播放'; }
+      } catch(e){ console.error(e); }
+    });
+
+    audio.addEventListener('timeupdate', ()=>{
+      if (isFinite(audio.duration)){
+        const pct = (audio.currentTime/audio.duration)*100;
+        progress.value = pct;
+        time.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+      } else {
+        time.textContent = '00:00 / 00:00';
       }
     });
 
-    // 当用户点击按钮时播放/暂停（移动端一次点击即开始）
-    btn.addEventListener('click', async () => {
-      try {
-        if (a.paused) {
-          await a.play();
-          btn.textContent = '暂停 ■';
-        } else {
-          a.pause();
-          btn.textContent = '播放音频 ▶';
-        }
-      } catch (e) {
-        // 如果出错，仍然提供反馈
-        console.error(e);
-      }
+    progress.addEventListener('input', (e)=>{
+      const val = Number(e.target.value);
+      if (isFinite(audio.duration)) time.textContent = `${fmt((val/100)*audio.duration)} / ${fmt(audio.duration)}`;
+    });
+    progress.addEventListener('change', (e)=>{
+      const val = Number(e.target.value);
+      if (isFinite(audio.duration)) audio.currentTime = (val/100)*audio.duration;
     });
 
-    // 优化：手机端点击任意空白也触发播放（提升“扫码后直接有声”的体验）
-    document.addEventListener('touchstart', function onFirstTouch() {
-      if (a.paused) {
-        a.play().catch(()=>{ /* 被阻止时不处理 */ });
-      }
-      document.removeEventListener('touchstart', onFirstTouch);
+    // 首次触摸触发播放（提升扫码后即播体验）
+    document.addEventListener('touchstart', function onFirst(){
+      if (audio.paused) audio.play().catch(()=>{});
+      document.removeEventListener('touchstart', onFirst);
     }, {passive:true});
   </script>
 </body>
 </html>
-

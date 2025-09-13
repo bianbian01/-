@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>扫码播放音频</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,Arial,Helvetica,sans-serif;background:#0f172a;color:#eef2ff}
+    .wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+    .title{font-size:18px;margin-bottom:12px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:220px;height:60px;border-radius:12px;background:linear-gradient(90deg,#06b6d4,#3b82f6);
+      color:white;font-weight:600;font-size:18px;border:0;cursor:pointer;box-shadow:0 8px 20px rgba(3,7,18,0.5)
+    }
+    .hint{margin-top:12px;opacity:0.85;font-size:13px}
+    .cover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,6,23,0.55), rgba(2,6,23,0.85));backdrop-filter:blur(2px)}
+    .small{font-size:12px;opacity:.9}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">扫码后点击播放（或等待浏览器允许自动播放）</div>
+    <button id="playBtn" class="btn">播放音频 ▶</button>
+    <div class="hint small">若未自动播放，请点击按钮（手机浏览器通常需要一次用户交互）</div>
+  </div>
+
+  <audio id="audio" preload="auto" playsinline>
+    <source src="袁森.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const a = document.getElementById('audio');
+    const btn = document.getElementById('playBtn');
+
+    // 尝试在 load 后自动播放（多数浏览器会阻止）
+    window.addEventListener('load', async () => {
+      try {
+        await a.play();
+        btn.textContent = '正在播放…';
+      } catch (err) {
+        // 被阻止，等待用户点击
+        btn.textContent = '点击播放';
+      }
+    });
+
+    // 当用户点击按钮时播放/暂停（移动端一次点击即开始）
+    btn.addEventListener('click', async () => {
+      try {
+        if (a.paused) {
+          await a.play();
+          btn.textContent = '暂停 ■';
+        } else {
+          a.pause();
+          btn.textContent = '播放音频 ▶';
+        }
+      } catch (e) {
+        // 如果出错，仍然提供反馈
+        console.error(e);
+      }
+    });
+
+    // 优化：手机端点击任意空白也触发播放（提升“扫码后直接有声”的体验）
+    document.addEventListener('touchstart', function onFirstTouch() {
+      if (a.paused) {
+        a.play().catch(()=>{ /* 被阻止时不处理 */ });
+      }
+      document.removeEventListener('touchstart', onFirstTouch);
+    }, {passive:true});
+  </script>
+</body>
+</html>

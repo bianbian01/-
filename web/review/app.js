@@ -69,9 +69,7 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    out = out.replace(/(\/\/[^
-]*|#[^
-]*|\/\*[\s\S]*?\*\/)/g, '<span class="com">$1</span>');
+    out = out.replace(/(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="com">$1</span>');
     out = out.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span class="str">$1</span>');
     out = out.replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
 

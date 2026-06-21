@@ -1,0 +1,45 @@
+生产者消费者：
+生产者:
+semphore mutex = 1;
+P(empty);
+P(mutex);
+//生产数据
+V(mutex);
+V(full);
+消费者:
+semphore mutex = 1;
+P(full);
+P(mutex);
+//消费数据
+V(mutex);
+V(empty);
+读者写者：
+读者:
+semphore mutex = 1;
+P(mutex);
+count++;
+if(count == 1)
+    P(rw);
+V(mutex);
+//读数据
+P(mutex);
+count--;
+if(count == 0)
+    V(rw);
+V(mutex);
+写者:
+semphore rw = 1;
+P(rw);
+//写数据
+V(rw);
+哲学家就餐：
+哲学家:
+semphore chopstick[5] = {1, 1, 1, 1, 1};
+while(true){
+    //思考
+    P(chopstick[i]);
+    P(chopstick[(i+1)%5]);
+    //就餐
+    V(chopstick[i]);
+    V(chopstick[(i+1)%5]);
+}

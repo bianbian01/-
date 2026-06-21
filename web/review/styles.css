@@ -1,0 +1,151 @@
+:root {
+  --bg: #0b1220;
+  --panel: #121a2b;
+  --panel2: #1a2438;
+  --text: #e6ebf5;
+  --muted: #9aa8c7;
+  --accent: #5aa0ff;
+  --ok: #66d9a3;
+  --warn: #ffb86b;
+  --border: #2a3550;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: radial-gradient(circle at top, #13213f 0%, var(--bg) 38%);
+  color: var(--text);
+}
+.hero {
+  padding: 36px 28px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8, 12, 22, 0.55);
+  backdrop-filter: blur(6px);
+}
+.hero h1 { margin: 0 0 8px; font-size: 28px; }
+.hero p { margin: 6px 0; color: var(--muted); }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.badge {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+}
+.layout {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+.nav {
+  position: sticky;
+  top: 14px;
+  align-self: start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 14px;
+}
+.nav h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); }
+.nav a {
+  display: block;
+  color: #d8e2fa;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 8px;
+}
+.nav a:hover { background: var(--panel2); }
+.content { display: grid; gap: 16px; }
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 16px;
+}
+.card h2 { margin: 0 0 10px; font-size: 19px; }
+.card h3 { margin: 14px 0 8px; font-size: 15px; color: #c5d3f7; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.metric {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel2);
+  padding: 10px;
+}
+.metric b { font-size: 20px; display: block; }
+.metric span { color: var(--muted); font-size: 12px; }
+ul.clean { margin: 0; padding-left: 18px; color: #d3defa; }
+ul.clean li { margin: 6px 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tags span {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel2);
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.tree {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  background: #0c1322;
+}
+.tree-node { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #d8e5ff; line-height: 1.55; white-space: pre; }
+.code-layout { display: grid; grid-template-columns: 300px 1fr; gap: 12px; }
+.file-list {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0d1527;
+  max-height: 480px;
+  overflow: auto;
+}
+.file-item {
+  padding: 10px;
+  border-bottom: 1px solid #1f2a43;
+  cursor: pointer;
+}
+.file-item:hover, .file-item.active { background: #1b2844; }
+.file-item small { display: block; color: var(--muted); margin-top: 4px; }
+.code-panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0c1322;
+}
+.code-head {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  background: #111a2e;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+.code-head span { color: var(--muted); font-size: 12px; }
+pre {
+  margin: 0;
+  overflow: auto;
+  max-height: 480px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.kw { color: #7bb9ff; }
+.str { color: #9be7a8; }
+.com { color: #7f90b4; font-style: italic; }
+.num { color: #f8c06f; }
+.note { color: var(--muted); font-size: 13px; }
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  .nav { position: relative; top: 0; }
+  .code-layout { grid-template-columns: 1fr; }
+}
